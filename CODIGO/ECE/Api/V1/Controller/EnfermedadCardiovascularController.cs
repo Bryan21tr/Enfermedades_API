@@ -62,7 +62,7 @@ namespace TsaakAPI.Api.V1.Controller
             if (result.Success)
             {
                 // Si es exitosa, devuelve el resultado con un estado 200 OK
-                return Ok(result.Result);
+                return Ok(result);
             }
             else
             {
@@ -95,6 +95,42 @@ namespace TsaakAPI.Api.V1.Controller
 
             // Llamada al DAO para actualizar el registro
             var result = await _enfermedadCardiovascularDao.Delete(id);
+
+            // Verifica si la operación fue exitosa
+            if (result.Success)
+            {
+                // Si es exitosa, devuelve el resultado con un estado 200 OK
+                return Ok(result.Result);
+            }
+            else
+            {
+                // Si no fue exitosa, devuelve un error con el detalle
+                return BadRequest(new { message = result.Messages });
+            }
+        }
+        [HttpGet("Page")]
+        public async Task<IActionResult> PageFecht(int page, int fecth)
+        {
+            // Llamada al DAO para obtener el registro
+            var result = await _enfermedadCardiovascularDao.GetData(page, fecth);
+
+            // Verifica si la operación fue exitosa
+            if (result.Success)
+            {
+                // Si es exitosa, devuelve el resultado con un estado 200 OK
+                return Ok(result.Result);
+            }
+            else
+            {
+                // Si no fue exitosa, devuelve un error con el detalle
+                return BadRequest(new { message = result.Messages });
+            }
+        }
+        [HttpGet("Complete")]
+        public async Task<IActionResult> GetComplete()
+        {
+            // Llamada al DAO para obtener el registro
+            var result = await _enfermedadCardiovascularDao.Complete();
 
             // Verifica si la operación fue exitosa
             if (result.Success)

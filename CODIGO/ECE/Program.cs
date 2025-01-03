@@ -21,8 +21,8 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddScoped<EnfermedadCardiovascularDao>(provider =>
     new EnfermedadCardiovascularDao(connectionString));
 
-    //builder.Services.AddScoped<EnfermedadCronicaDao>(provider =>
-    //new EnfermedadCronicaDao(connectionString));
+builder.Services.AddScoped<EnfermedadCronicaDao>(provider =>
+new EnfermedadCronicaDao(connectionString));
 
 var app = builder.Build();
 

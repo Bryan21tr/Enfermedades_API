@@ -14,9 +14,9 @@ namespace TsaakAPI.Entities
         public int id_enf_cronica { get; set; }
         public string? nombre { get; set; }
         public string? descripcion { get; set; }
-        public DateOnly fecha_registro { get; set; }
-        public DateOnly fecha_inicio { get; set; }
+        public DateTime fecha_registro { get; set; }
+        public DateTime fecha_inicio { get; set; }
         public bool estado { get; set; }
-        public DateOnly fecha_actualizacion { get; set; }
+        public DateTime fecha_actualizacion { get; set; }
     }
 }

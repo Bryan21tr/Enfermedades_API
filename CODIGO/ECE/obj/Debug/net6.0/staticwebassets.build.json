@@ -1,11 +1,12 @@
 {
   "Version": 1,
-  "Hash": "W8zwgqGQkaFuKiZyujSir89zlSz6A8fR4U556Qf7QLc=",
+  "Hash": "VylQqIIydulB0ymyKxcQvet5LVhI6Cl4yEoTsKyMWqs=",
   "Source": "ECE",
   "BasePath": "_content/ECE",
   "Mode": "Default",
   "ManifestType": "Build",
   "ReferencedProjectsConfiguration": [],
   "DiscoveryPatterns": [],
-  "Assets": []
+  "Assets": [],
+  "Endpoints": []
 }

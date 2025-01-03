@@ -150,15 +150,12 @@ public async Task<ResultOperation<List<VMCatalog>>> GetAll()
         }
         public async Task<ResultOperation<VMCatalog>> Update(EnfermedadCardiovascular enfermedad, int id){
             ResultOperation<VMCatalog> resultOperation = new ResultOperation<VMCatalog>();
-            try{
+            enfermedad.id_enf_cardiovascular=id;
                 Task<RespuestaBD> respuestaBDTask = _sqlTools.ExecuteFunctionAsync("admece.fn_patch_enfermedad_cardiovascular", new ParameterPGsql[]{
                     new ParameterPGsql("p_id_enf_cardiovascular", NpgsqlTypes.NpgsqlDbType.Integer,id),
                     new ParameterPGsql("p_nombre", NpgsqlTypes.NpgsqlDbType.Varchar,enfermedad.nombre),
                     new ParameterPGsql("p_descripcion", NpgsqlTypes.NpgsqlDbType.Varchar,enfermedad.descripcion),
-                    new ParameterPGsql("p_fecha_registro", NpgsqlTypes.NpgsqlDbType.Date,enfermedad.fecha_registro),
-                    new ParameterPGsql("p_fecha_inicio", NpgsqlTypes.NpgsqlDbType.Date,enfermedad.fecha_inicio),
-                    new ParameterPGsql("p_estado", NpgsqlTypes.NpgsqlDbType.Boolean,enfermedad.estado),
-                    new ParameterPGsql("p_fecha_actualizacion", NpgsqlTypes.NpgsqlDbType.Date,enfermedad.fecha_actualizacion)
+                    new ParameterPGsql("p_estado", NpgsqlTypes.NpgsqlDbType.Boolean,true)
                 });
                 RespuestaBD respuestaBD = await respuestaBDTask;
             resultOperation.Success = !respuestaBD.ExisteError;
@@ -171,7 +168,7 @@ public async Task<ResultOperation<List<VMCatalog>>> GetAll()
                         Id = (int)respuestaBD.Data.Tables[0].Rows[0]["id_enf_cardiovascular"],
                         Nombre = respuestaBD.Data.Tables[0].Rows[0]["nombre"].ToString(),
                         Descripcion = respuestaBD.Data.Tables[0].Rows[0]["descripcion"].ToString(),
-                        Estado = respuestaBD.Data.Tables[0].Rows[0]["estado"] as bool?,
+                        Estado = respuestaBD.Data.Tables[0].Rows[0]["estado"] as bool?
 
                     }; 
 
@@ -182,16 +179,16 @@ public async Task<ResultOperation<List<VMCatalog>>> GetAll()
                     resultOperation.Success = false;
                     resultOperation.AddErrorMessage($"No fue posible regresar el registro de la tabla. {respuestaBD.Detail}");
                 }
-            }
-            }catch (Exception ex)
+            }else
             {
-                // Captura errores no controlados
-                resultOperation.Success = false;
-                resultOperation.AddErrorMessage($"Error al insertar el registro en la base de datos: {ex.Message}");
+                //TODO Agregar error en el log             
+                if (respuestaBD.ExisteError)
+                    Console.WriteLine("Error {0} - {1} - {2} - {3}", respuestaBD.ExisteError, respuestaBD.Mensaje, respuestaBD.CodeSqlError, respuestaBD.Detail);
+                throw new Exception(respuestaBD.Mensaje);
             }
+            
             return resultOperation;
         }
-
         public async Task<ResultOperation<VMCatalog>> Delete(int id)
         {
             ResultOperation<VMCatalog> resultOperation = new ResultOperation<VMCatalog>();
@@ -233,7 +230,106 @@ public async Task<ResultOperation<List<VMCatalog>>> GetAll()
 
 
         }
-               
+        public async Task<ResultOperation<DataTableView<VMCatalog>>> GetData(int page, int fecth)
+        {
+            List<VMCatalog> Lista = new List<VMCatalog>();
+            int total = 0;
+            ResultOperation<DataTableView<VMCatalog>> resultOperation = new ResultOperation<DataTableView<VMCatalog>>();
+
+            Task<RespuestaBD> respuestaBDTask = _sqlTools.ExecuteFunctionAsync("admece.fn_get_pagina_cardiovascular", new ParameterPGsql[]{
+                new ParameterPGsql("p_id_pag_cardiovascular", NpgsqlTypes.NpgsqlDbType.Integer,page),
+                new ParameterPGsql("p_id_fecth_cardiovascular", NpgsqlTypes.NpgsqlDbType.Integer,fecth)
+            });
+            RespuestaBD respuestaBD = await respuestaBDTask;
+            resultOperation.Success = !respuestaBD.ExisteError;
+            if (!respuestaBD.ExisteError)
+            {
+                if (respuestaBD.Data.Tables.Count > 0
+                 && respuestaBD.Data.Tables[0].Rows.Count > 0)
+                {
+                    foreach(DataRow fila in respuestaBD.Data.Tables[0].Rows){
+                    VMCatalog aux = new VMCatalog
+                    {
+                        Id = (int)fila["id_enf_cardiovascular"],
+                        Nombre = fila["nombre"].ToString(),
+                        Descripcion = fila["descripcion"].ToString(),
+                        Estado = fila["estado"] as bool?,
+
+                    }; 
+                    total++;
+                    Lista.Add(aux);
+                    }
+                    Pager pages = new Pager(page, fecth, total);
+
+                    DataTableView<VMCatalog> dataTableViews = new DataTableView<VMCatalog>(pages,Lista);
+                    resultOperation.Result = dataTableViews; 
+                }
+                else
+                {
+                    resultOperation.Result = null;
+                    resultOperation.Success = false;
+                    resultOperation.AddErrorMessage($"No fue posible regresar el registro de la tabla. {respuestaBD.Detail}");
+                }
+                
+            }
+            else
+            {
+                //TODO Agregar error en el log             
+                if (respuestaBD.ExisteError)
+                    Console.WriteLine("Error {0} - {1} - {2} - {3}", respuestaBD.ExisteError, respuestaBD.Mensaje, respuestaBD.CodeSqlError, respuestaBD.Detail);
+                throw new Exception(respuestaBD.Mensaje);
+            }
+            return resultOperation;
+        }
+
+        public async Task<ResultOperation<List<EnfermedadCardiovascular>>> Complete()
+        {
+            List<EnfermedadCardiovascular> Lista = new List<EnfermedadCardiovascular>();
+            ResultOperation<List<EnfermedadCardiovascular>> resultOperation = new ResultOperation<List<EnfermedadCardiovascular>>();
+
+            Task<RespuestaBD> respuestaBDTask = _sqlTools.ExecuteFunctionAsync("admece.fn_getall_enfermedad_cardiovascular", new ParameterPGsql[]{});
+            RespuestaBD respuestaBD = await respuestaBDTask;
+            resultOperation.Success = !respuestaBD.ExisteError;
+            if (!respuestaBD.ExisteError)
+            {
+                if (respuestaBD.Data.Tables.Count > 0
+                 && respuestaBD.Data.Tables[0].Rows.Count > 0)
+                {
+                    foreach(DataRow fila in respuestaBD.Data.Tables[0].Rows){
+                    EnfermedadCardiovascular aux = new EnfermedadCardiovascular
+                    {
+                        id_enf_cardiovascular = (int)fila["id_enf_cardiovascular"],
+                        nombre = fila["nombre"].ToString(),
+                        descripcion = fila["descripcion"].ToString(),
+                        fecha_registro = (DateTime)fila["fecha_registro"],
+                        fecha_inicio = (DateTime)fila["fecha_inicio"],
+                        estado = (bool)fila["estado"],
+                        fecha_actualizacion = (DateTime)fila["fecha_actualizacion"],
+
+
+                    }; 
+                    Lista.Add(aux);
+                    }
+                    resultOperation.Result = Lista; 
+                }
+                else
+                {
+                    resultOperation.Result = null;
+                    resultOperation.Success = false;
+                    resultOperation.AddErrorMessage($"No fue posible regresar el registro de la tabla. {respuestaBD.Detail}");
+                }
+                
+            }
+            else
+            {
+                //TODO Agregar error en el log             
+                if (respuestaBD.ExisteError)
+                    Console.WriteLine("Error {0} - {1} - {2} - {3}", respuestaBD.ExisteError, respuestaBD.Mensaje, respuestaBD.CodeSqlError, respuestaBD.Detail);
+                throw new Exception(respuestaBD.Mensaje);
+            }
+            return resultOperation;
+        }
+   
     }
 }
 
