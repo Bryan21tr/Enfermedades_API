@@ -279,7 +279,102 @@ public async Task<ResultOperation<List<VMCatalog>>> GetAll()
             }
             return resultOperation;
         }
-               
+
+        public async Task<ResultOperation<List<EnfermedadCronica>>> Complete()
+        {
+           
+            List<EnfermedadCronica> Lista = new List<EnfermedadCronica>();
+            ResultOperation<List<EnfermedadCronica>> resultOperation = new ResultOperation<List<EnfermedadCronica>>();
+
+            Task<RespuestaBD> respuestaBDTask = _sqlTools.ExecuteFunctionAsync("schemasye.fn_getcomplete_enfermedad_cronica", new ParameterPGsql[]{});
+            RespuestaBD respuestaBD = await respuestaBDTask;
+            resultOperation.Success = !respuestaBD.ExisteError;
+            if (!respuestaBD.ExisteError)
+            {
+                if (respuestaBD.Data.Tables.Count > 0
+                 && respuestaBD.Data.Tables[0].Rows.Count > 0)
+                {
+                    
+                    foreach(DataRow fila in respuestaBD.Data.Tables[0].Rows){
+                    EnfermedadCronica aux = new EnfermedadCronica
+                    {
+                        id_enf_cronica = (int)fila["id_enf_cronica"],
+                        nombre = fila["nombre"].ToString(),
+                        descripcion = fila["descripcion"].ToString(),
+                        fecha_registro = (DateTime)fila["fecha_registro"],
+                        fecha_inicio = (DateTime)fila["fecha_inicio"],
+                        estado = (bool)fila["estado"],
+                        fecha_actualizacion = (DateTime)fila["fecha_actualizacion"],
+
+
+                    }; 
+                    Lista.Add(aux);
+                    }
+                    resultOperation.Result = Lista; 
+                }
+                else
+                {
+                    resultOperation.Result = null;
+                    resultOperation.Success = false;
+                    resultOperation.AddErrorMessage($"No fue posible regresar el registro de la tabla. {respuestaBD.Detail}");
+                }
+                
+            }
+            else
+            {
+                //TODO Agregar error en el log             
+                if (respuestaBD.ExisteError)
+                    Console.WriteLine("Error {0} - {1} - {2} - {3}", respuestaBD.ExisteError, respuestaBD.Mensaje, respuestaBD.CodeSqlError, respuestaBD.Detail);
+                throw new Exception(respuestaBD.Mensaje);
+            }
+            return resultOperation;
+        }   
+    
+    public async Task<ResultOperation<Dictionary<int, object>>> Diccionario()
+        {
+            Dictionary<int, object> diccionario = new Dictionary<int, object>();
+            int contador=1;
+            ResultOperation<Dictionary<int, object>> resultOperation = new ResultOperation<Dictionary<int, object>>();
+
+            Task<RespuestaBD> respuestaBDTask = _sqlTools.ExecuteFunctionAsync("schemasye.fn_getall_enfermedad_cronica", new ParameterPGsql[]{});
+            RespuestaBD respuestaBD = await respuestaBDTask;
+            resultOperation.Success = !respuestaBD.ExisteError;
+            if (!respuestaBD.ExisteError)
+            {
+                if (respuestaBD.Data.Tables.Count > 0
+                 && respuestaBD.Data.Tables[0].Rows.Count > 0)
+                {
+                    foreach(DataRow fila in respuestaBD.Data.Tables[0].Rows){
+                    VMCatalog aux = new VMCatalog
+                    {
+                        Id = (int)fila["id_enf_cronica"],
+                        Nombre = fila["nombre"].ToString(),
+                        Descripcion = fila["descripcion"].ToString(),
+                        Estado = fila["estado"] as bool?,
+
+                    }; 
+                    diccionario.Add(contador,aux);
+                    contador++;
+                    }
+                    resultOperation.Result = diccionario; 
+                }
+                else
+                {
+                    resultOperation.Result = null;
+                    resultOperation.Success = false;
+                    resultOperation.AddErrorMessage($"No fue posible regresar el registro de la tabla. {respuestaBD.Detail}");
+                }
+                
+            }
+            else
+            {
+                //TODO Agregar error en el log             
+                if (respuestaBD.ExisteError)
+                    Console.WriteLine("Error {0} - {1} - {2} - {3}", respuestaBD.ExisteError, respuestaBD.Mensaje, respuestaBD.CodeSqlError, respuestaBD.Detail);
+                throw new Exception(respuestaBD.Mensaje);
+            }
+            return resultOperation;
+        }
     }
 }
 
