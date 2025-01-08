@@ -330,11 +330,10 @@ public async Task<ResultOperation<List<VMCatalog>>> GetAll()
             return resultOperation;
         }   
     
-    public async Task<ResultOperation<Dictionary<int, object>>> Diccionario()
+    public async Task<ResultOperation<List<Dictionary<string,object>>>> Diccionario()
         {
-            Dictionary<int, object> diccionario = new Dictionary<int, object>();
-            int contador=1;
-            ResultOperation<Dictionary<int, object>> resultOperation = new ResultOperation<Dictionary<int, object>>();
+            List<Dictionary<string,object>> Lista = new List<Dictionary<string,object>>();
+            ResultOperation<List<Dictionary<string, object>>> resultOperation = new ResultOperation<List<Dictionary<string,object>>>();
 
             Task<RespuestaBD> respuestaBDTask = _sqlTools.ExecuteFunctionAsync("schemasye.fn_getall_enfermedad_cronica", new ParameterPGsql[]{});
             RespuestaBD respuestaBD = await respuestaBDTask;
@@ -345,18 +344,20 @@ public async Task<ResultOperation<List<VMCatalog>>> GetAll()
                  && respuestaBD.Data.Tables[0].Rows.Count > 0)
                 {
                     foreach(DataRow fila in respuestaBD.Data.Tables[0].Rows){
-                    VMCatalog aux = new VMCatalog
+                        
+                    Dictionary<string, object> diccionario = new Dictionary<string, object>
                     {
-                        Id = (int)fila["id_enf_cronica"],
-                        Nombre = fila["nombre"].ToString(),
-                        Descripcion = fila["descripcion"].ToString(),
-                        Estado = fila["estado"] as bool?,
+                        {"1", (int)fila["id_enf_cronica"]},
+                        {"2", fila["nombre"].ToString()},
+                        {"3", fila["descripcion"].ToString()},
+                        {"4", fila["estado"] as bool?},
 
                     }; 
-                    diccionario.Add(contador,aux);
-                    contador++;
+                    Lista.Add(diccionario);   
                     }
-                    resultOperation.Result = diccionario; 
+                                   
+                    
+                    resultOperation.Result = Lista; 
                 }
                 else
                 {

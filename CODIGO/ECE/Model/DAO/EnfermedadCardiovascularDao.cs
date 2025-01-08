@@ -332,7 +332,7 @@ public async Task<ResultOperation<List<VMCatalog>>> GetAll()
             return resultOperation;
         }
 
-        public async Task<ResultOperation<Dictionary<int, object>>> Diccionario()
+        public async Task<ResultOperation<Dictionary<int, object>>> Diccionario2()
         {
             Dictionary<int, object> diccionario = new Dictionary<int, object>();
             int contador=1;
@@ -357,8 +357,54 @@ public async Task<ResultOperation<List<VMCatalog>>> GetAll()
                     }; 
                     diccionario.Add(contador,aux);
                     contador++;
+                    
                     }
                     resultOperation.Result = diccionario; 
+                }
+                else
+                {
+                    resultOperation.Result = null;
+                    resultOperation.Success = false;
+                    resultOperation.AddErrorMessage($"No fue posible regresar el registro de la tabla. {respuestaBD.Detail}");
+                }
+                
+            }
+            else
+            {
+                //TODO Agregar error en el log             
+                if (respuestaBD.ExisteError)
+                    Console.WriteLine("Error {0} - {1} - {2} - {3}", respuestaBD.ExisteError, respuestaBD.Mensaje, respuestaBD.CodeSqlError, respuestaBD.Detail);
+                throw new Exception(respuestaBD.Mensaje);
+            }
+            return resultOperation;
+        }
+        public async Task<ResultOperation<List<Dictionary<string,object>>>> Diccionario()
+        {
+            List<Dictionary<string,object>> Lista = new List<Dictionary<string,object>>();
+            ResultOperation<List<Dictionary<string, object>>> resultOperation = new ResultOperation<List<Dictionary<string,object>>>();
+
+            Task<RespuestaBD> respuestaBDTask = _sqlTools.ExecuteFunctionAsync("admece.fn_getall_enfermedad_cardiovascular", new ParameterPGsql[]{});
+            RespuestaBD respuestaBD = await respuestaBDTask;
+            resultOperation.Success = !respuestaBD.ExisteError;
+            if (!respuestaBD.ExisteError)
+            {
+                if (respuestaBD.Data.Tables.Count > 0
+                 && respuestaBD.Data.Tables[0].Rows.Count > 0)
+                {
+                    foreach(DataRow fila in respuestaBD.Data.Tables[0].Rows){
+                    Dictionary<string, object> diccionariox = new Dictionary<string, object>
+                    {
+                        {"1", (int)fila["id_enf_cardiovascular"]},
+                        {"2", fila["nombre"].ToString()},
+                        {"3", fila["descripcion"].ToString()},
+                        {"4", fila["estado"] as bool?},
+
+                    }; 
+                    Lista.Add(diccionariox);   
+                    }
+                                   
+                    
+                    resultOperation.Result = Lista; 
                 }
                 else
                 {
