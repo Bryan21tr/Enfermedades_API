@@ -11,6 +11,7 @@ AS $BODY$
  begin
  return QUERY 
  select e.id_enf_cardiovascular,e.nombre,e.descripcion,e.fecha_registro, e.fecha_inicio, e.estado, e.fecha_actualizacion
- from admece."tc_enfermedad_cardiovascular" e;
+ from admece."tc_enfermedad_cardiovascular" e
+where e.estado=true;
 end
 $BODY$;

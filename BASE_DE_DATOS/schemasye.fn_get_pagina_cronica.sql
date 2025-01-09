@@ -11,6 +11,7 @@ begin
  return QUERY
  execute format(' select e.id_enf_cronica,e.nombre,e.descripcion,e.estado
  from schemasye.tc_enfermedad_cronica e
+where e.estado=true
  order by id_enf_cronica limit %s offset %s', p_id_fecth_cronica,(p_id_pag_cronica-1)*p_id_fecth_cronica);
 end;
 $BODY$;

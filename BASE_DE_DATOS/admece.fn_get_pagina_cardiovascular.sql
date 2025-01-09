@@ -12,6 +12,7 @@ begin
  return QUERY
  execute format(' select e.id_enf_cardiovascular,e.nombre,e.descripcion,e.estado
  from admece.tc_enfermedad_cardiovascular e
+where e.estado=true
  order by id_enf_cardiovascular limit %s offset %s', p_id_fecth_cardiovascular,(p_id_pag_cardiovascular-1)*p_id_fecth_cardiovascular);
 end;
 $BODY$;

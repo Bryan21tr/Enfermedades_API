@@ -11,6 +11,7 @@ AS $BODY$
 begin
  return QUERY
  select e.id_enf_cronica,e.nombre,e.descripcion,e.estado
- from schemasye.tc_enfermedad_cronica e;
+ from schemasye.tc_enfermedad_cronica e
+where e.estado=true;
 end
 $BODY$;

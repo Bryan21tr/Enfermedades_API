@@ -113,11 +113,10 @@ public async Task<ResultOperation<List<VMCatalog>>> GetAll()
 
 
         }
-        public async Task<ResultOperation<int>> Create(EnfermedadCardiovascular enfermedad){
+        public async Task<ResultOperation<int>> Create([FromBody] EnfermedadCardiovascular enfermedad){
             ResultOperation<int> resultOperation = new ResultOperation<int>();
             try{
                 Task<RespuestaBD> respuestaBDTask = _sqlTools.ExecuteFunctionAsync("admece.fn_insert_enfermedad_cardiovascular", new ParameterPGsql[]{
-                    new ParameterPGsql("p_id_enf_cardiovascular", NpgsqlTypes.NpgsqlDbType.Integer,enfermedad.id_enf_cardiovascular),
                     new ParameterPGsql("p_nombre", NpgsqlTypes.NpgsqlDbType.Varchar,enfermedad.nombre),
                     new ParameterPGsql("p_descripcion", NpgsqlTypes.NpgsqlDbType.Varchar,enfermedad.descripcion),
                     new ParameterPGsql("p_fecha_registro", NpgsqlTypes.NpgsqlDbType.Date,enfermedad.fecha_registro),
@@ -332,11 +331,10 @@ public async Task<ResultOperation<List<VMCatalog>>> GetAll()
             return resultOperation;
         }
 
-        public async Task<ResultOperation<Dictionary<int, object>>> Diccionario2()
+        public async Task<ResultOperation<Dictionary<int, string>>> Diccionario()
         {
-            Dictionary<int, object> diccionario = new Dictionary<int, object>();
-            int contador=1;
-            ResultOperation<Dictionary<int, object>> resultOperation = new ResultOperation<Dictionary<int, object>>();
+            Dictionary<int, string> diccionario = new Dictionary<int, string>();
+            ResultOperation<Dictionary<int, string>> resultOperation = new ResultOperation<Dictionary<int, string>>();
 
             Task<RespuestaBD> respuestaBDTask = _sqlTools.ExecuteFunctionAsync("admece.fn_getall_enfermedad_cardiovascular", new ParameterPGsql[]{});
             RespuestaBD respuestaBD = await respuestaBDTask;
@@ -346,18 +344,12 @@ public async Task<ResultOperation<List<VMCatalog>>> GetAll()
                 if (respuestaBD.Data.Tables.Count > 0
                  && respuestaBD.Data.Tables[0].Rows.Count > 0)
                 {
-                    foreach(DataRow fila in respuestaBD.Data.Tables[0].Rows){
-                    VMCatalog aux = new VMCatalog
-                    {
-                        Id = (int)fila["id_enf_cardiovascular"],
-                        Nombre = fila["nombre"].ToString(),
-                        Descripcion = fila["descripcion"].ToString(),
-                        Estado = fila["estado"] as bool?,
+                    for(int i=0;i<respuestaBD.Data.Tables[0].Rows.Count;i++){
+                       var id = (int)respuestaBD.Data.Tables[0].Rows[i]["id_enf_cardiovascular"];
+                       var nombre = respuestaBD.Data.Tables[0].Rows[i]["nombre"].ToString();
+                        
+                        diccionario.Add(id,nombre);
 
-                    }; 
-                    diccionario.Add(contador,aux);
-                    contador++;
-                    
                     }
                     resultOperation.Result = diccionario; 
                 }
@@ -378,51 +370,7 @@ public async Task<ResultOperation<List<VMCatalog>>> GetAll()
             }
             return resultOperation;
         }
-        public async Task<ResultOperation<List<Dictionary<string,object>>>> Diccionario()
-        {
-            List<Dictionary<string,object>> Lista = new List<Dictionary<string,object>>();
-            ResultOperation<List<Dictionary<string, object>>> resultOperation = new ResultOperation<List<Dictionary<string,object>>>();
-
-            Task<RespuestaBD> respuestaBDTask = _sqlTools.ExecuteFunctionAsync("admece.fn_getall_enfermedad_cardiovascular", new ParameterPGsql[]{});
-            RespuestaBD respuestaBD = await respuestaBDTask;
-            resultOperation.Success = !respuestaBD.ExisteError;
-            if (!respuestaBD.ExisteError)
-            {
-                if (respuestaBD.Data.Tables.Count > 0
-                 && respuestaBD.Data.Tables[0].Rows.Count > 0)
-                {
-                    foreach(DataRow fila in respuestaBD.Data.Tables[0].Rows){
-                    Dictionary<string, object> diccionariox = new Dictionary<string, object>
-                    {
-                        {"1", (int)fila["id_enf_cardiovascular"]},
-                        {"2", fila["nombre"].ToString()},
-                        {"3", fila["descripcion"].ToString()},
-                        {"4", fila["estado"] as bool?},
-
-                    }; 
-                    Lista.Add(diccionariox);   
-                    }
-                                   
-                    
-                    resultOperation.Result = Lista; 
-                }
-                else
-                {
-                    resultOperation.Result = null;
-                    resultOperation.Success = false;
-                    resultOperation.AddErrorMessage($"No fue posible regresar el registro de la tabla. {respuestaBD.Detail}");
-                }
-                
-            }
-            else
-            {
-                //TODO Agregar error en el log             
-                if (respuestaBD.ExisteError)
-                    Console.WriteLine("Error {0} - {1} - {2} - {3}", respuestaBD.ExisteError, respuestaBD.Mensaje, respuestaBD.CodeSqlError, respuestaBD.Detail);
-                throw new Exception(respuestaBD.Mensaje);
-            }
-            return resultOperation;
-        }
+        
     }
 }
 
