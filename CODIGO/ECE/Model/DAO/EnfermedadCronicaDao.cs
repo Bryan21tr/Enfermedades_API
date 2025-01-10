@@ -111,11 +111,10 @@ public async Task<ResultOperation<List<VMCatalog>>> GetAll()
 
 
         }
-        public async Task<ResultOperation<int>> Create(EnfermedadCronica enfermedad){
+        public async Task<ResultOperation<int>> Create([FromBody] EnfermedadCronica enfermedad){
             ResultOperation<int> resultOperation = new ResultOperation<int>();
             try{
                 Task<RespuestaBD> respuestaBDTask = _sqlTools.ExecuteFunctionAsync("schemasye.fn_insert_enfermedad_cronica", new ParameterPGsql[]{
-                    new ParameterPGsql("p_id_enf_cronica", NpgsqlTypes.NpgsqlDbType.Integer,enfermedad.id_enf_cronica),
                     new ParameterPGsql("p_nombre", NpgsqlTypes.NpgsqlDbType.Varchar,enfermedad.nombre),
                     new ParameterPGsql("p_descripcion", NpgsqlTypes.NpgsqlDbType.Varchar,enfermedad.descripcion),
                     new ParameterPGsql("p_fecha_registro", NpgsqlTypes.NpgsqlDbType.Date,enfermedad.fecha_registro),
@@ -140,12 +139,12 @@ public async Task<ResultOperation<List<VMCatalog>>> GetAll()
             }
             }catch (Exception ex)
             {
-                // Captura errores no controlados
                 resultOperation.Success = false;
                 resultOperation.AddErrorMessage($"Error al insertar el registro en la base de datos: {ex.Message}");
             }
             return resultOperation;
         }
+       
         public async Task<ResultOperation<VMCatalog>> Update(EnfermedadCronica enfermedad, int id){
             ResultOperation<VMCatalog> resultOperation = new ResultOperation<VMCatalog>();
             try{
@@ -330,10 +329,10 @@ public async Task<ResultOperation<List<VMCatalog>>> GetAll()
             return resultOperation;
         }   
     
-    public async Task<ResultOperation<List<Dictionary<string,object>>>> Diccionario()
+    public async Task<ResultOperation<Dictionary<int, string>>> Diccionario()
         {
-            List<Dictionary<string,object>> Lista = new List<Dictionary<string,object>>();
-            ResultOperation<List<Dictionary<string, object>>> resultOperation = new ResultOperation<List<Dictionary<string,object>>>();
+            Dictionary<int, string> diccionario = new Dictionary<int, string>();
+            ResultOperation<Dictionary<int, string>> resultOperation = new ResultOperation<Dictionary<int, string>>();
 
             Task<RespuestaBD> respuestaBDTask = _sqlTools.ExecuteFunctionAsync("schemasye.fn_getall_enfermedad_cronica", new ParameterPGsql[]{});
             RespuestaBD respuestaBD = await respuestaBDTask;
@@ -343,21 +342,14 @@ public async Task<ResultOperation<List<VMCatalog>>> GetAll()
                 if (respuestaBD.Data.Tables.Count > 0
                  && respuestaBD.Data.Tables[0].Rows.Count > 0)
                 {
-                    foreach(DataRow fila in respuestaBD.Data.Tables[0].Rows){
+                    for(int i=0;i<respuestaBD.Data.Tables[0].Rows.Count;i++){
+                       var id = (int)respuestaBD.Data.Tables[0].Rows[i]["id_enf_cronica"];
+                       var nombre = respuestaBD.Data.Tables[0].Rows[i]["nombre"].ToString();
                         
-                    Dictionary<string, object> diccionario = new Dictionary<string, object>
-                    {
-                        {"1", (int)fila["id_enf_cronica"]},
-                        {"2", fila["nombre"].ToString()},
-                        {"3", fila["descripcion"].ToString()},
-                        {"4", fila["estado"] as bool?},
+                        diccionario.Add(id,nombre);
 
-                    }; 
-                    Lista.Add(diccionario);   
                     }
-                                   
-                    
-                    resultOperation.Result = Lista; 
+                    resultOperation.Result = diccionario; 
                 }
                 else
                 {

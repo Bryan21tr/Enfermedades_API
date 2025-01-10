@@ -56,7 +56,7 @@ namespace TsaakAPI.Api.V1.Controller
             }
         }
         [HttpPost]
-    public async Task<IActionResult> PostEnfermedad([FromBody]EnfermedadCronica  enfermedad)
+    public async Task<IActionResult> PostEnfermedad([FromBody] EnfermedadCronica  enfermedad)
     {
         var result = await _enfermedadCronicaDao.Create(enfermedad);
         // Verifica si la operación fue exitosa
@@ -157,7 +157,7 @@ namespace TsaakAPI.Api.V1.Controller
             if (result.Success)
             {
                 // Si es exitosa, devuelve el resultado con un estado 200 OK
-                return Ok();
+                return Ok(result);
             }
             else
             {

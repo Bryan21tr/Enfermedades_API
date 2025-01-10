@@ -55,19 +55,19 @@ namespace TsaakAPI.Api.V1.Controller
             }
         }
         [HttpPost]
-    public async Task<ActionResult<IActionResult>> PostEnfermedad([FromBody] EnfermedadCardiovascular  enfermedad)
+    public async Task<IActionResult> PostEnfermedad([FromBody] EnfermedadCardiovascular  enfermedad)
     {
         var result = await _enfermedadCardiovascularDao.Create(enfermedad);
         // Verifica si la operación fue exitosa
             if (result.Success)
             {
                 // Si es exitosa, devuelve el resultado con un estado 200 OK
-                return Ok();
+                return CreatedAtAction(nameof(PostEnfermedad), new { id = result }, new { message = "Registro agregado exitosamente.", id = result });
             }
             else
             {
                 // Si no fue exitosa, devuelve un error con el detalle
-                return BadRequest();
+                return BadRequest(new { message = result.Messages });
             }
     }
     [HttpPatch("{id}")]
