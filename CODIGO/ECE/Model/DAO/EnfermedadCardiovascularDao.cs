@@ -45,8 +45,12 @@ public async Task<ResultOperation<List<VMCatalog>>> GetAll()
                         Descripcion = fila["descripcion"].ToString(),
                         Estado = fila["estado"] as bool?,
 
-                    }; 
+                    };
+                    ModeloBase fechax =new ModeloBase{
+                        fecha_actualizacion= (DateTime)fila["fecha_actualizacion"];
+                    } ;
                     Lista.Add(aux);
+                    Lista.Add(fechax);
                     }
                     resultOperation.Result = Lista; 
                 }
